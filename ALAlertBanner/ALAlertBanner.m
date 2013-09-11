@@ -528,10 +528,37 @@ static CFTimeInterval const kRotationDurationIPad = 0.4;
     CGFloat initialYCoord = 0.f;
     switch (self.position) {
         case ALAlertBannerPositionTop:
-            initialYCoord = -heightForSelf;
-            if (isSuperviewKindOfWindow) initialYCoord += kStatusBarHeight;
             if (AL_IOS_7_OR_GREATER)
-                initialYCoord += [UIApplication navigationBarHeight] + kStatusBarHeight;
+            {
+                id nextResponder = self.nextResponder;
+                while (nextResponder && ![nextResponder isKindOfClass:[UIViewController class]])
+                {
+                    if ([nextResponder isKindOfClass:[UIView class]])
+                    {
+                        nextResponder = [(UIView*)nextResponder nextResponder];
+                    }
+                    else
+                    {
+                        nextResponder = nil;
+                    }
+                }
+
+                if (nextResponder)
+                {
+                    initialYCoord = -heightForSelf + ((UIViewController*)nextResponder).topLayoutGuide.length;
+                }
+                else
+                {
+                    initialYCoord = -heightForSelf;
+                    if (isSuperviewKindOfWindow) initialYCoord += kStatusBarHeight;
+                    initialYCoord += [UIApplication navigationBarHeight] + kStatusBarHeight;
+                }
+            }
+            else
+            {
+                initialYCoord = -heightForSelf;
+                if (isSuperviewKindOfWindow) initialYCoord += kStatusBarHeight;
+            }
             break;
         case ALAlertBannerPositionBottom:
             initialYCoord = superview.bounds.size.height;
